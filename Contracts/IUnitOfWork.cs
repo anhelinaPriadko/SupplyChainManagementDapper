@@ -1,10 +1,11 @@
 ﻿namespace SupplyChainManagementDapper.Contracts
 {
-    public interface IUnitOfWork: IDisposable
+    public interface IUnitOfWork : IDisposable
     {
         IProductRepository Products { get; }
         IPurchaseOrderRepository PurchaseOrders { get; }
+        IShipmentRepository Shipments { get; }
 
-        void Complete();
+        Task CompleteAsync();
     }
 }

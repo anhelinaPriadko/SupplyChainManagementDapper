@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SupplyChainManagementDapper.Contracts;
 using SupplyChainManagementDapper.Models;
+using Npgsql;
 
 namespace SupplyChainManagementDapper.Controllers
 {
@@ -15,8 +16,6 @@ namespace SupplyChainManagementDapper.Controllers
             _unitOfWork = unitOfWork;
         }
 
-        // GET: api/Product/active
-        // Використовує VIEW V_ActiveProducts
         [HttpGet("active")]
         public async Task<ActionResult<IEnumerable<Product>>> GetActiveProducts()
         {
@@ -24,8 +23,6 @@ namespace SupplyChainManagementDapper.Controllers
             return Ok(products);
         }
 
-        // DELETE: api/Product/soft-delete/{id}
-        // Використовує збережену процедуру SoftDeleteProduct
         [HttpDelete("soft-delete/{productId}")]
         public async Task<IActionResult> SoftDeleteProduct(int productId, [FromQuery] int userId)
         {
@@ -37,11 +34,11 @@ namespace SupplyChainManagementDapper.Controllers
             try
             {
                 await _unitOfWork.Products.SoftDeleteAsync(productId, userId);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
-                return NoContent();
+                return Ok(new { message = $"Product {productId} soft-deleted successfully." });
             }
-            catch (Npgsql.PostgresException ex) when (ex.SqlState == "P0001")
+            catch (PostgresException ex) when (ex.SqlState == "P0001")
             {
                 return BadRequest(new { message = $"Помилка БД: {ex.Detail}" });
             }
